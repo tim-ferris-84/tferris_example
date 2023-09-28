@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Market Data by Country</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f7f7;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        form {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        p {
+            font-size: 14px;
+            color: #777;
+        }
+
+        select[disabled] {
+            background-color: #eee;
+            color: #999;
+        }
+
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        #api-data {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007bff;
+            color: #fff;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const countrySelect = document.getElementById('country');
+            const apiDataDisplay = document.getElementById('api_data');
+
+            countrySelect.addEventListener('change', function() {
+                const selectedCountry = countrySelect.value;
+                const apiKey = document.getElementById('api_key').value;
+                const apiUrl = `/markets?country=${selectedCountry}&api_key=${apiKey}`;
+
+                fetch(apiUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Clear previous data
+                        apiDataDisplay.innerHTML = '';
+
+                        // Check if data is not empty
+                        if (Object.keys(data).length === 0) {
+                            apiDataDisplay.innerHTML = '<p>No data available for the selected country.</p>';
+                        } else {
+                            // Create a table and add the JSON data
+                            const table = document.createElement('table');
+                            const tableBody = document.createElement('tbody');
+
+                            for (const key in data) {
+                                if (data.hasOwnProperty(key)) {
+                                    const value = data[key];
+                                    const row = tableBody.insertRow();
+                                    const cell1 = row.insertCell(0);
+                                    const cell2 = row.insertCell(1);
+
+                                    cell1.innerHTML = `<strong>${key}:</strong>`;
+                                    cell2.innerHTML = value;
+                                }
+                            }
+
+                            table.appendChild(tableBody);
+                            apiDataDisplay.appendChild(table);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('API request error:', error);
+                    });
+            });
+        });
+    </script>
+  </head>
+  <body>
+    <h1>Make Calls to Trading Economics Market Endpoint</h1>
+    <form>
+      <label for="api_key">API Key:</label>
+      <input type="text" id="api_key" name="api_key" placeholder="Enter your API key">
+      <p>Free accounts have access to the following countries: Mexico, New Zealand, Sweden, Thailand. For more, contact us at support@tradingeconomics.com.</p>
+      <p>Note: If left empty will default to developer's api key</p>
+      <label for="country">Select a Country:</label>
+      <select id="country" name="country">
+        <% @countries.each do |country| %>
+          <% unless ['Mexico', 'New Zealand', 'Sweden', 'Thailand'].include?(country.iso_short_name) %>
+            <option value="<%= country.iso_short_name %>" disabled><%= country.iso_short_name %></option>
+          <% else %>
+            <option value="<%= country.iso_short_name %>"><%= country.iso_short_name %></option>
+          <% end %>
+        <% end %>
+      </select>
+
+      <input type="submit" value="Submit">
+    </form>
+
+    <!-- Display API data here -->
+    <div id="api-data">
+      <h2>Market Data</h2>
+      <table>
+        <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Value</th>
+        </tr>
+        </thead>
+        <tbody>
+        <% if @markets.present? %>
+          <% @markets.each do |key, value| %>
+            <tr>
+              <td><strong><%= key %>:</strong></td>
+              <td><%= value %></td>
+            </tr>
+          <% end %>
+        <% else %>
+          <tr>
+            <td colspan="2">No data available for the selected country.</td>
+          </tr>
+        <% end %>
+        </tbody>
+      </table>
+    </div>
+
+  </body>
+</html>
