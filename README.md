@@ -19,11 +19,9 @@ Before you begin, make sure you have the following installed on your system:
 - [Bundler](https://bundler.io/)
 
 ### Installation
-1. Clone this repository to your local machine:
-   ```bash
-   git clone https://github.com/yourusername/trading-economics-market-app.git
+1. Clone this repository to your local machine
 2. ```bash 
-    cd trading-economics-market-app`
+    cd tf_sample_app`
 3. ```bash
     bundle install
 4. ```bash
